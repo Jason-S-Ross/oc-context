@@ -24,11 +24,22 @@
 (require 'ox-context)
 
 (defun oc-context-export-bibliography
-    (_keys _files _style props &rest _)
+    (_keys _files style props &rest _)
   "Print references from bibliography.
 PROPS is the local properties of the bibliography, as a plist."
   ;; TODO Handle PROPS.
-  "\\placelistofpublications")
+  (let ((numbering
+         (pcase style
+           ((or "numeric" "nb") "num")
+           (_ "no")))
+        (sorttype
+         (pcase style
+           ((or "numeric" "nb") "index")
+           (_ "default"))))
+    (format
+     "\\placelistofpublications[%s]"
+     (org-context--format-arguments
+      (list (cons "numbering" numbering) (cons "sorttype" sorttype))))))
 
 (defun oc-context-export-citation
     (citation style _ info)
