@@ -36,10 +36,27 @@ PROPS is the local properties of the bibliography, as a plist."
          (pcase style
            ((or "numeric" "nb") "index")
            (_ "default"))))
-    (format
-     "\\placelistofpublications[%s]"
-     (org-context--format-arguments
-      (list (cons "numbering" numbering) (cons "sorttype" sorttype))))))
+    (let (args elem)
+      (dolist (datum props)
+        (message "datum: %S %S" datum (keywordp datum))
+
+        (cond
+         ((keywordp datum)
+          (when elem (push elem args) (message "Pushing"))
+          (setq elem (substring (symbol-name datum) 1))
+          (message "elem: %S" elem))
+
+         (t
+          ;; Comma-separated values are associated to the same keyword
+          (when elem
+            (push (cons elem datum) args))
+          (setq elem nil)))
+        (message "args: %S" args))
+      (push (cons "numbering" numbering) args)
+      (push (cons "sorttype" sorttype) args)
+      (format
+       "\\placelistofpublications[%s]"
+       (org-context--format-arguments args)))))
 
 (defun oc-context-export-citation
     (citation style _ info)
@@ -103,7 +120,7 @@ This function adds resources to the document, and set styles."
       (insert
        (mapconcat
         (lambda (f)
-          (format "\\usebtxdataset[%s]" f))
+          (format "\\usebtxdataset[%s]" (expand-file-name f)))
         files
         "\n")
        "\n"))
