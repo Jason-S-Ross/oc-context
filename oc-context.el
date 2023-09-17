@@ -50,10 +50,11 @@ PROPS is the local properties of the bibliography, as a plist."
           ;; Comma-separated values are associated to the same keyword
           (when elem
             (push (cons elem datum) args))
-          (setq elem nil)))
-        (message "args: %S" args))
-      (push (cons "numbering" numbering) args)
-      (push (cons "sorttype" sorttype) args)
+          (setq elem nil))))
+      (when (not (assoc "numbering" args))
+        (push (cons "numbering" numbering) args))
+      (when (not (assoc "sorttype" args))
+        (push (cons "sorttype" sorttype) args))
       (format
        "\\placelistofpublications[%s]"
        (org-context--format-arguments args)))))
